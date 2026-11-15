@@ -1,0 +1,404 @@
+\documentclass[11pt,letterpaper,oneside,reqno]{amsart}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage[margin=1.12in]{geometry}
+\usepackage{microtype,booktabs}
+\setlength{\emergencystretch}{1.5em}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdfauthor={},pdftitle={An explicit power saving for planar unit distances}}
+\pagestyle{plain}
+\raggedbottom
+
+\newtheorem{mainthm}{Theorem}
+\renewcommand{\themainthm}{\Alph{mainthm}}
+\newtheorem{lemma}{Lemma}[section]
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\title{An explicit power saving for planar unit distances}
+\date{}
+\newcommand{\eventline}{Round 1 Mathathon \enspace$\cdot$\enspace Geometry
+  \enspace$\cdot$\enspace Problem 46}
+
+\newif\ifshowteam
+\showteamtrue
+\ifshowteam
+  \author[]{Deep Blue}
+  \dedicatory{\normalfont
+    Shubhrajit Bhattacharya and Sofia de la Cerda, University of Chicago\\
+    Ritesh Goenka and Dmitry Tsarev, University of Oxford\\[.55em]
+    \eventline\\[.55em]
+    \url{https://github.com/shubhrajitbhattacharya/unit_distance_formalization}\\
+    \href{https://shubhrajit.com/p-e7eddfbaa057d78d86c1d003/}{Interactive proof blueprint}}
+\else
+  \dedicatory{\normalfont\eventline}
+\fi
+
+\begin{document}
+\begin{abstract}
+OpenAI proved that the number of unit distances among \(n\) points of
+the Euclidean plane is \(O(n^{4/3-\delta})\) for some \(\delta>0\).
+We explain the prediction argument through Proposition~4.4 of their
+paper and track the size of a finite test for the circle equation.
+This gives an explicit saving, for which the simpler value
+\(2^{-2^{2115}}\) also suffices. In the large-variation case, the
+height of one stationary coordinate on an \(8\times4\) grid is
+enough to complete the count. We give the key estimates and record
+the scope and provenance of the Lean verification.
+\end{abstract}
+\maketitle
+\thispagestyle{plain}
+\section{The unit distance problem}
+Let \(u(n)\) be the largest number of unordered pairs at Euclidean distance
+one among \(n\) distinct points in the plane. Erd\H{o}s's lattice
+construction gives \(u(n)\ge n^{1+c/\log\log n}\) for an absolute \(c>0\)
+and arbitrarily large \(n\) \cite{E}. Spencer, Szemer\'edi and Trotter
+proved \(u(n)=O(n^{4/3})\) \cite{SST}. In May 2026 OpenAI obtained a
+lower bound \(u(n)\gg n^{1+\delta}\) for some \(\delta>0\) along a
+sequence \cite{OAI1}. Sawin proved that one can take
+\(\delta=0.014114\) \cite[Theorem~1]{S}. In September OpenAI proved
+\(u(n)=O(n^{4/3-\Delta})\) for some \(\Delta>0\) \cite{OAI2}.
+The 17-point diagram in the talk illustrates the counting convention.
+Its highlighted Moser spindle consists of two unit rhombi meeting at one
+vertex, their short diagonals, and a unit edge joining their far vertices.
+Each drawn segment contributes one unordered pair.
+
+\begin{mainthm}\label{thm:main}
+Put \(H_0=226(2^{2100}+1)\), \(N_0=\lceil 32\exp(19H_0)\rceil\), and
+\begin{equation}\label{eq:delta}
+  \Delta=\frac{1}{30600(7200N_0)^4\log(1+N_0^4)}.
+\end{equation}
+There is an absolute constant \(C>0\) such that
+\(u(n)\le Cn^{4/3-\Delta}\) for every integer \(n\ge2\).
+\end{mainthm}
+
+All logarithms are natural. To see the size of the saving, the defining
+ceiling gives \(32e^{19H_0}\le N_0\le33e^{19H_0}\). Substitution in
+\eqref{eq:delta} gives
+\[
+  2^{2114}\log 2<76H_0<\log(1/\Delta)
+  <77H_0+\log 30600<2^{2115}\log 2 .
+\]
+Thus \(2^{-2^{2115}}<\Delta<2^{-2^{2114}}\). The smaller endpoint
+gives the bound stated in the talk since \(n\ge2\). The September
+theorem gives no numerical value of its saving with which to compare
+\eqref{eq:delta}.
+
+\section{The bounded-variation argument}
+
+We describe the proof through Proposition~4.4 of \cite{OAI2}.
+If there were no power saving, some sequence of \(n=t^3\) points would
+determine \(t^{4-o(1)}\) unit pairs as \(t\to\infty\).
+The incidence reduction gives real algebraic points \(P\), centers \(Q\),
+and a unit-incidence graph \(E\subseteq P\times Q\) with
+\[
+ |P|=t^{1+o(1)},\qquad |Q|=t^{2+o(1)},\qquad |E|=t^{2+o(1)}.
+\]
+Uniformly, \(d(p)=t^{1+o(1)}\), \(d(q)=t^{o(1)}\), and
+\(\min_{q\in Q}d(q)\to\infty\). Earlier forms of the geometric partition
+appear in \cite[Corollary~5.11]{katz-silier} and
+\cite[\S3]{pach-raz-solymosi}.
+
+Under the uniform edge law \(\omega(p,q)=\mathbf1_E(p,q)/|E|\), the
+marginals are \(\mu(p)=d(p)/|E|\) and \(\kappa(q)=d(q)/|E|\).
+Choose \(q\sim\kappa\) and two conditionally independent uniform
+neighbors \(p,p'\) of \(q\). The wedge law and its endpoint law are
+\[
+ \Omega(p,q,p')=\frac{\mathbf1_E(p,q)\mathbf1_E(p',q)}{|E|d(q)},
+ \qquad \pi(p,p')=\sum_q\Omega(p,q,p').
+\]
+On the retained graph the mutual information
+\(D=\sum_{\pi(p,p')>0}\pi(p,p')\log(\pi(p,p')/(\mu(p)\mu(p')))\)
+is \(o(\log t)\) \cite[\S2]{OAI2}.
+The geometry enters even here. Two distinct endpoints have at most two
+common centers, so their joint mass is at most \(2/(|E|\min_q d(q))\).
+The diagonal has total mass \(|Q|/|E|=o(1)\). These bounds keep the
+joint entropy within \(o(\log t)\) of the sum of the marginal entropies.
+
+Write \(z=x+iy,\ w=x-iy\); a unit edge \(e=(p,q)\) has jumps
+\(d_e=z_p-z_q\) and \(d_e^{-1}=w_p-w_q\).
+At each number-field place \(v\) and threshold \(s\), split the edges
+according as \(-\log|d_e|_v>s\) or not. Let \(S\) be the sum over places,
+with the usual local-degree weights, of the integral over \(s\) of the
+smaller of the two edge proportions. Assuming \(S\le S_0\), one may
+translate and rescale the coordinates to \(Z,W\), preserving the
+unit-edge product and bounding their mean logarithmic heights.
+
+A test chooses a uniform embedding of a common normal number field into
+\(\mathbb C\) and records the mesh cell of \((\sigma Z,\sigma W)\), with an overflow
+code. A center accepts the cells attained by its neighbors. Since the
+alphabet size \(M\) is fixed and \(D=o(\log t)\), the prediction lemma
+of \cite[\S3]{OAI2} gives a history \(H\) of \(k=o(\log t)\) tests
+with at most \(M^k=t^{o(1)}\) values. First draw \(p\sim\mu\). Given
+\(p\), draw \(\widehat p\sim\mu(\cdot\mid H=H(p))\) and three uniform
+neighbors \(q_1,q_2,q_3\) of \(p\), independently. At a single fresh
+embedding each \(q_j\) accepts \(\widehat p\) with probability \(1-o(1)\).
+A union bound gives simultaneous acceptance.
+
+For this short history, choose \(B\ge2\) large and \(0<r<1\) small,
+depending only on \(S_0\). With probability at least \(0.99\) for large \(t\),
+the sampled coordinates, edge jumps and inverse edge jumps have modulus
+at most \(B\),
+\(\lvert Z_{\widehat p}-Z_p\rvert\ge r\), and the jumps
+\(D_j=Z_p-Z_{q_j}\) differ pairwise by at least \(r\).
+Here coordinates denote their embedded values. The height bounds make
+upper and lower tail probabilities for nonzero differences arbitrarily
+small, uniformly in the fixed history. For the short history the point collision
+probability is at most \(|H(P)|\max_p\mu(p)=o(1)\), and each center
+collision has probability at most \(1/\min_p d(p)=o(1)\).
+
+Choose \(0<\tau<\min(1,r^4/(128B^5))\) for the mesh width. On a
+simultaneous accepted and separated outcome, comparing the candidate
+with a genuine neighbor in its cell gives
+\(\lvert(Z_{\widehat p}-Z_{q_j})(W_{\widehat p}-W_{q_j})-1\rvert
+\le 8B\tau\).
+Subtract the exact equation for \(p\) and then take differences between
+centers. The resulting two linear equations in
+\(Z_{\widehat p}-Z_p,W_{\widehat p}-W_p\) have determinant of modulus
+\(\prod_{i<j}|D_i-D_j|/|D_1D_2D_3|\ge r^3/B^3\).
+Cramer's rule gives
+\(\lvert Z_{\widehat p}-Z_p\rvert\le64B^5\tau/r^3<r/2\), a contradiction.
+Thus \(S\to\infty\) on a near-extremal sequence. The slide's three thin
+annuli illustrate the argument at the real-plane embedding. At a general
+embedding the two coordinates need not be conjugate. The product identity holds
+at every embedding.
+
+This identity also explains the role of the norm. For the strictly convex
+unit ball \(x^2+|y|\le1\), the vector \((1/2,3/4)\) is a unit vector,
+but its Euclidean product \(zw\) equals \(13/16\). Indeed, on the grid
+\((i/m,j/m^2)\), \(0\le i\le m,\ 0\le j\le m^2\), each displacement
+with index difference \((h,m^2-h^2)\) for \(m/3\le h\le2m/3\) occurs
+\((m+1-h)(h^2+1)\gg m^3\) times and is a unit displacement for this
+norm. This gives \(\gg m^4\) unordered unit pairs among \(\asymp m^3\)
+points, as in Valtr's example \cite{valtr}.
+
+\section{How the argument gives an explicit saving}
+\subsection{Counting histories fixes the exponent}
+Assume that Theorem~\ref{thm:main} fails. For arbitrarily large
+\(t=n^{1/3}\) there are then at least \(t^{4-3\Delta}\) ordered unit
+pairs. The quantitative incidence reduction gives a retained graph with
+\[
+ D+1\le30600\Delta\log t,\qquad
+ t\max_p\mu(p)\le 1/100,\qquad \min_p d(p)\ge300 .
+\]
+Set \(S_0=2^{2100}\). If \(S\le S_0\), normalization gives
+\[
+ \mathbb E_\mu[h(Z)+h(W)]+\mathbb E_\kappa[h(Z)+h(W)]
+ \le226(S+1)\le H_0 ,
+\]
+where \(h\) is the absolute logarithmic Weil height. Sawin's example
+over a CM field illustrates how a short history of embeddings permits
+resampling \cite[post 9400]{sawin}. The following test works for the
+general number field.
+
+Take \(R=e^{6H_0}\), \(\eta=e^{-7H_0}\), and mesh width at most
+\(\eta/(16R)\) on each real coordinate in \([-R,R]\). This takes
+\(N_0=\lceil32e^{19H_0}\rceil\) intervals per coordinate, hence
+\(M=1+N_0^4\) codes including overflow. A bounded center accepts
+overflow and the cells occupied by its genuine neighbors. An overflowing
+center accepts every code. On the part \(|Z-Z_q|\ge1\), the identity
+\(W-W_q=(Z-Z_q)^{-1}\) shows that differences in \(W\) are bounded by
+the corresponding differences in \(Z\). On the remaining part one can
+interchange \(Z\) and \(W\). Thus a bounded center accepts at most
+\(32N_0^2+1\) codes. The quantitative prediction estimate gives fresh
+rejection probability at most \(1/200\) with a history of length
+\(k<A(D+1)\), where \(A=(7200N_0)^4\). The choice of \(\Delta\) now
+has a precise purpose:
+\begin{equation}\label{eq:balance}
+ k\log M<A(D+1)\log M
+ \le 30600\Delta A\log M\,\log t=\log t .
+\end{equation}
+There are fewer than \(t\) histories. The probability of resampling
+\(p\) itself is therefore at most \(t\max_p\mu(p)\le1/100\).
+
+It remains to turn acceptance into an exact equation. Put
+\(F=(Z_{\widehat p}-Z_q)(W_{\widehat p}-W_q)-1\).
+In an accepted nonoverflow cell with bounded center, comparison with a
+genuine neighbor gives \(|\sigma F|\le\eta/2\). The height inequalities
+give \(\mathbb E h(F)\le H_0+3\log2\). For \(F\ne0\),
+\(h(F^{-1})=h(F)\), so a fresh embedding seldom makes a nonzero
+residual this small. Including overflow, the probability of acceptance
+with \(F\ne0\) is at most
+\[
+ \frac16+\frac{H_0+3\log2}{7H_0}<0.311 .
+\]
+The first term bounds overflow by Markov's inequality. A repeated
+center costs at most \(3/300\). The total failure probability is at most
+\(1/100+3/300+3(0.311+1/200)<1\). Thus two distinct points would
+have three distinct exact centers. Indeed, with
+\(u=Z_{\widehat p}-Z_p\ne0\), \(v=W_{\widehat p}-W_p\), each of the
+three distinct jumps \(d=Z_p-Z_q\) would solve \(vd^2+uvd+u=0\).
+This is impossible. We conclude that \(S>S_0\).
+
+\subsection{Why the large-variation case preserves the saving}
+For two points \(p,p'\) with a common center \(q\), record their direction
+ratio \(\lambda=(z_p-z_q)/(z_{p'}-z_q)\). It satisfies
+\(\lVert p-p'\rVert^2=2-\lambda-\lambda^{-1}\). Sawin proposed fixing
+the alternating products of such ratios around rectangles and studying
+which directions can still vary \cite[post 9389]{sawin}. The conditional
+grid refinement in \cite{arun} reduces the generic configuration from
+\(20\times5\) to \(8\times4\). We use this smaller grid and a height
+bound for one of its coordinates. We outline this part of the research
+formalization.
+
+Moment estimates on the original common-center walk yield a scale
+\(J\ge S/500\) and a dense graph of point pairs with assigned ratios.
+Every retained ratio has height at least \(J/3\). The alternating
+quotient \(\lambda_{ij}\lambda_{i'j'}/(\lambda_{ij'}\lambda_{i'j})\)
+on each complete rectangle has height at most
+\(J/(324\cdot 2^{111})\). Freeze these quotients and allow the positions
+and ratios to vary subject to their equations. If no tangent vector
+moves every ratio to first order, one ratio is stationary on the whole
+tangent space: a vector space over \(\mathbb C\) cannot be covered by
+finitely many proper linear subspaces. The
+coefficient estimate for that ratio uses at most 24 normalized quotients
+and gives
+\[
+ h(\lambda_{ij})\le 2^{2086}
+  +2^{113}\frac{24J}{324\cdot2^{111}}
+ \le\left(\frac{125}{4096}+\frac{8}{27}\right)J<\frac{J}{3}.
+\]
+Here \(2^{2086}\le 125J/4096\) follows from \(J\ge2^{2100}/500\).
+The lower bound on each individual height excludes the stationary case.
+
+Four fixed anchors then constrain their common neighbors to a curve of
+degree at most \(80\). After restricting both sides to curves and
+excluding the case of a common unit circle rich in retained points, the
+position tuples of compatible \(8\times4\) grids lie in a proper
+algebraic subset of the product of the twelve curves. Its defining
+polynomial has uniformly bounded degree. Write \(m\) for the number of
+points supporting the extracted pair graph. Its restriction to the two
+curves retains \(e\gg m^{2-25/2000}\) edges on sides of sizes \(a,b\le m\).
+Count ordered grids with repetitions. If \(d(\mathbf p)\) is the common
+degree of an ordered eight-tuple on the left, the power-mean inequality
+applied twice gives
+\[
+ \sum_{\mathbf p}d(\mathbf p)^4
+ \ge a^{-24}\Bigl(\sum_{r\ {\rm on\ the\ right}}d(r)^8\Bigr)^4
+ \ge \frac{e^{32}}{a^{24}b^{28}}
+ \gg m^{11+3/5}.
+\]
+Polynomial zero counting on the product of twelve curves gives
+\(O(m^{11})\) for the same tuples. These bounds contradict one another for sufficiently large
+\(m\). The polynomial degree affects how large \(m\) must be. It costs
+no further power of \(n\) in \eqref{eq:balance}.
+
+\section{Work during the 40 hours and formal verification}
+We worked through the September proof up to Proposition~4.4 and
+identified the Euclidean identity used in the three-center argument.
+We first stated the exact exponent and its high-level dependencies in
+Lean. Checking those statements led us to keep the original walk in the
+moment estimates and to bound the height of one stationary ratio.
+We then checked the formal conclusion against the literal count of
+unordered pairs in finite subsets of \(\mathbb R^2\).
+
+The following are the declarations used here, all in the namespace
+\texttt{PlanarUnitDistances}. Their hypotheses specify where each
+intermediate estimate applies.
+\begin{itemize}
+\item \texttt{ResearchPhysical.original\_walk\_moments} gives the three
+moment bounds and the two endpoint estimates for a sufficiently large
+retained incidence graph.
+\item \texttt{GridLocus.proper\_grid\_locus} gives the separating-polynomial
+statement for the admissible ordered pair of curves.
+\item \texttt{IntegralGrid.stationary\_height\_unconditional} gives the
+stationary-coordinate height estimate with cap \(2^{2086}+2^{113}s\),
+where \(s\) is the sum of the relevant quotient heights.
+\item \texttt{exactGap\_log\_bounds} gives the two middle bounds on
+\(\log(1/\Delta)\) in Section~1. The outer bounds there are numerical.
+\item \texttt{IntegralGrid.exact\_unconditional} proves
+Theorem~\ref{thm:main} with its displayed \(\Delta\), no hypotheses,
+and \(n\ge2\). One \(C>0\) works for every \(n\) in that range.
+\end{itemize}
+
+The research project builds with Lean and Mathlib v4.35.0. Parts of its
+incidence, counting, specialization and probability arguments adapt
+OpenAI's published Lean sources \cite{OAI2}. We claim the explicit
+quantitative refinement and report the kernel check with this attribution.
+The project does not qualify as an independent competition formalization
+of the official OpenAI theorem. The official declaration asks for
+an unspecified exponent and includes \(n=0,1\).
+
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Quantity in the dependency chain of Theorem~A & Count\\
+\midrule
+Proof modules & 312\\
+Lines containing Lean code in those modules & 31,592\\
+Source declarations, including adapted code & 2,536\\
+Project declarations replayed, including generated declarations & 3,728\\
+Direct dependency pairs between project declarations & 19,099\\
+Transitive external declarations inspected & 77,801\\
+Admitted proofs in the dependency chain & 0\\
+Additional project axioms & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The line count excludes blank lines and lines consisting only of
+comments. A fresh kernel replay started at the named theorem and checked
+all project declarations on which its type or proof depends. The only
+axioms reported were \texttt{propext}, \texttt{Classical.choice}, and
+\texttt{Quot.sound}.
+
+\subsection*{AI use and further work}
+We used OpenAI Codex to develop Lean proofs, compare constants and
+quantifiers across the manuscript and code, and draft the exposition.
+We checked the sampling formulas against the September paper, the
+displayed exponent against its Lean definition, and the final declaration
+by kernel replay. Our detailed human reading during the event reached
+Proposition~4.4. The next step is to work through the large-variation
+rigidity argument and its formal proof in full, and to write a
+self-contained human account of the explicit saving.
+
+\begin{thebibliography}{10}
+\bibitem{E} P. Erd\H{o}s, \href{https://doi.org/10.1080/00029890.1946.11991674}
+{On sets of distances of \(n\) points}, \emph{Amer. Math. Monthly}
+\textbf{53} (1946), 248--250.
+
+\bibitem{katz-silier} N. H. Katz and O. Silier,
+\href{https://arxiv.org/abs/2303.17186v2}{Structure of cell decompositions
+in extremal Szemer\'edi--Trotter examples}, arXiv:2303.17186,
+2023, rev. 2026.
+
+\bibitem{OAI1} OpenAI,
+\href{https://cdn.openai.com/pdf/74c24085-19b0-4534-9c90-465b8e29ad73/unit-distance-proof.pdf}
+{Planar point sets with many unit distances}, preprint, May 2026.
+
+\bibitem{OAI2} OpenAI,
+\href{https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/A-power-saving-for-planar-unit-distances-September-23-2026/paper.pdf}
+{A power saving for planar unit distances}, preprint, 23 September 2026,
+with \href{https://github.com/openai/math/tree/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/UnitDistances}
+{accompanying Lean sources}.
+
+\bibitem{pach-raz-solymosi} J. Pach, O. E. Raz and J. Solymosi,
+\href{https://doi.org/10.4230/LIPIcs.SoCG.2026.83}{Erd\H{o}s's unit
+distance problem and rigidity}, in \emph{42nd International Symposium
+on Computational Geometry}, LIPIcs \textbf{367} (2026), article 83.
+
+\bibitem{arun} \texttt{rohanarun} (repository maintainer),
+\href{https://github.com/rohanarun/unit-distance-grid-refinement/tree/4e7b3af0a46a7127a57019a0ab6d76fa2b55fe2e}
+{A smaller generic grid in the unit-distance argument}, research draft
+prepared with Codex and Claude, 10 October 2026, revised 13 October 2026.
+
+\bibitem{S} W. Sawin, \href{https://arxiv.org/abs/2605.20579}
+{An explicit lower bound for the unit distance problem},
+arXiv:2605.20579, 2026.
+
+\bibitem{sawin} W. Sawin, comments on T. Bloom,
+\emph{Erd\H{o}s problems in the OpenAI proofs}, Erd\H{o}s Problems,
+\href{https://www.erdosproblems.com/forum/thread/blog:10\#post-9389}
+{post 9389, 25 October 2026}, and
+\href{https://www.erdosproblems.com/forum/thread/blog:10\#post-9400}
+{post 9400, 1 November 2026}.
+
+\bibitem{SST} J. Spencer, E. Szemer\'edi and W. T. Trotter,
+Unit distances in the Euclidean plane, in \emph{Graph Theory and
+Combinatorics} (B. Bollob\'as, ed.), Academic Press, 1984, 293--303.
+
+\bibitem{valtr} P. Valtr,
+\href{https://kam.mff.cuni.cz/~valtr/n.pdf}{Strictly convex norms allowing
+many unit distances and related touching questions}, manuscript, \S2.1.
+\end{thebibliography}
+\end{document}
